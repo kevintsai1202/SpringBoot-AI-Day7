@@ -34,7 +34,6 @@ public class AiController {
 						             .withTemperature(1f)
 						             .build()
 			    ));
-		response.getResult().getOutput()
 		return response.getResult().getOutput().getContent();
 	}
 }
