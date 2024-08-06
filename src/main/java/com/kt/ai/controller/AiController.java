@@ -1,39 +1,29 @@
 package com.kt.ai.controller;
 
-import java.util.List;
-
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.Media;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.openai.OpenAiChatOptions;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.util.MimeTypeUtils;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 public class AiController {
 	private final ChatModel chatModel;
 	
-	@GetMapping(value = "/chat")
-	public String chat(@RequestParam String prompt) {	
-		List<Message> messages = List.of(
-				new SystemMessage("你是一個說故事大師，如果找不到資料或是最近的新聞就編造一個聽起來讓人開心的消息"),
-				new UserMessage(prompt)
+	@PostMapping(value = "/imagequery")
+	public String imageQuery(@RequestParam MultipartFile file, @RequestParam String message) {
+		UserMessage userMessage = new UserMessage(
+				message, 
+				new Media(
+					MimeTypeUtils.parseMimeType(file.getContentType()),
+					file.getResource())
 				);
-		ChatResponse response = chatModel
-				.call(new Prompt(
-			    	messages,
-			    	OpenAiChatOptions.builder()
-						             .withTemperature(1f)
-						             .build()
-			    ));
-		return response.getResult().getOutput().getContent();
+		return chatModel.call(userMessage);
 	}
 }
